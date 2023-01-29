@@ -34,6 +34,20 @@ func (f *Fs) ReadDir(name string) ([]fs.DirEntry, error) {
 	return file.ReadDir(-1)
 }
 
+func (f *Fs) Stat(name string) (fs.FileInfo, error) {
+	file, err := f.open(context.Background(), name)
+	if err != nil {
+		return nil, err
+	}
+	defer file.close()
+	return file, nil
+}
+
+func (f *Fs) Sub(dir string) (fs.FS, error) {
+	root := path.Join(f.root, dir)
+	return New(f.c, root), nil
+}
+
 func (f *Fs) open(ctx context.Context, p string) (*File, error) {
 	root, err := f.c.DoGetRequest(ctx,
 		aliyundrive.GetRequest{FileId: aliyundrive.RootFileId})
